@@ -1,7 +1,7 @@
 <img src="https://raw.githubusercontent.com/Vinz68/logTest/master/images/logTestImg.png" width="250"></img> 
 ## stairsJs
-is a minimal NodeJS app for a rapberry pi to automatically drive the stairs LED lights (14 steps) using IR detection.
-It uses logging (bunyan) a database (mongoDB) a REST Webservice API (express) and of course GPIO (onoff)/
+is a minimal NodeJS app for a rapberry pi-3 to automatically drive the stairs LED lights (14 steps) using IR detection.
+It uses logging (bunyan) and of course GPIO (onoff).
 
 ## Purpose 
 The goal of this project is to build a nice led-light for my stairs (which I renovated recently) and to learn the raspberry PI, nodeJS and GPIO programming
@@ -17,41 +17,43 @@ TODO, display all connection/wires
 
 ## Installation notes
 
-Prerequsites: You need node and npm installed on your system. You can check if you have it installed in a terminal window with:
+***Prerequisites***: You need node and npm installed on your RPI system. You can check if you have it installed in a terminal window with:
+
 ``` bash
 node -v
 npm -v
 ```
 
 To install node + npm execute:
+``` bash
 curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
 sudo apt-get install -y nodejs
+```
+
+***Installation steps:***
+
+1. Fork this package to your github account
 
 
-
-1. fork this package to your github account
-
-
-2. clone it from github to your server 
+2. Clone it from github to your server 
 ``` bash
 git clone https://github.com/[your-account-name-here]/stairsJs.git
 ```
 
 
-3. install its dependencies 
+3. Install its dependencies 
 ```
 npm install
 ```
 NOTE: Use npm install --only=production to install only dependencies, and not devDependencies,regardless of the value of the NODE_ENV environment variable.
 
 
-4. run the program
+4. Run the program
 
 use one of the following commands
 ``` bash
 node stairsJs
 npm start
-gulp
 ```
 or use PM2 (auto starts / auto restart the program after boot)
 ``` bash
@@ -60,7 +62,7 @@ pm2 start stairsJs.js
 For the last option you need to install PM2. TODO: Provide link/instructions
 
 
-5. Execute the unit- and integration tests
+5. Execute the unit- and integration tests (todo)
 ```
 gulp test
 ```
@@ -69,9 +71,6 @@ gulp test
 
 Report a bug or a suggestion by posting an issue on the git repository (https://github.com/Vinz68/stairsJs/issues).
 
-
-
-
  
 ## TODO List:
  - [ ] include code quality check (JSLint or something else..)     
@@ -79,6 +78,7 @@ Report a bug or a suggestion by posting an issue on the git repository (https://
  - [ ] add electric scheme
  - [ ] add pictures
  - [ ] add PM2 link/instructions ?
+
  
 
 

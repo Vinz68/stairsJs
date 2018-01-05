@@ -1,5 +1,5 @@
 /* --------------------------------------------------------------------------------------------------
-   stairsJs - nodeJS program to automatically drive LED lights for a stair (14 steps), using IR detection.
+   stairsJs - nodeJS program for RPI-3 to automatically drive stairs LED lights (14 steps), using IR detection.
    - using bunyan as logging framework
    - using onoff as GPIO package
    2018-01-05 Vincent van Beek
@@ -110,4 +110,8 @@ process.on('SIGINT', function () {
     console.log(APPNAME+" has been terminated.");
     process.exit(10);     // end program with code 10  (forced exit)
 });
+
+/* -----------------------------------------------------
+    End of main program
+------------------------------------------------------- */
 
