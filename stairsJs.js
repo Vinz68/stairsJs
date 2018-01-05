@@ -110,3 +110,9 @@ process.on('SIGINT', function () {
     console.log(APPNAME+" has been terminated.");
     process.exit(10);     // end program with code 10  (forced exit)
 });
+
+/* -----------------------------------------------------
+-- new
+-- changes
+------------------------------------------------------- */
+
