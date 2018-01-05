@@ -1,4 +1,3 @@
-<img src="https://raw.githubusercontent.com/Vinz68/logTest/master/images/logTestImg.png" width="250"></img> 
 ## stairsJs
 is a minimal NodeJS app for a rapberry pi-3 to automatically drive the stairs LED lights (14 steps) using IR detection.
 It uses logging (bunyan) and of course GPIO (onoff).
