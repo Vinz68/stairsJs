@@ -25,91 +25,79 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
     name: APPNAME,                          // use the application name
     src: true,                              // show source filename, function and line number
                                             // Note: set to false in the production environment since it is time consuming
-    streams: [{
-        type: "rotating-file",              // Log files will "roll" over (automatic deletion after configured period)
-        path: "./logs/"+APPNAME+".log",     // Path and filename of the log file
-        period: "1d",                       // daily rotation
-        count: 30                           // keep 30 file copies (~1 month)
-    }],
+    streams: [
+        {
+            //level: 'warn',                  // log WARN and above to rotating file    
+            type: "rotating-file",          // Log files will "roll" over (automatic deletion after configured period)
+            path: "./logs/"+APPNAME+".log", // Path and filename of the log file
+            period: "1d",                   // daily rotation
+            count: 30                       // keep 30 file copies (~1 month)
+        }
+    ],
     serializers: {                          // usage of default serializers:
         req: bunyan.stdSerializers.req,     // Bunyan's HTTP server request serializer with a suggested set of keys.
         res: bunyan.stdSerializers.res      // Bunyan's HTTP server response serializer with a suggested set of keys.
     }
 });
 
+
+
 log.info("Starting... " );
 
+var activateLedStrips = false;
+var activationDirection = 'none';
+
+// Used to determine duration
 var startTime = moment(new Date());
 var endTime = moment(new Date());
-var LED = new Gpio(17, 'out'); 		        // Use GPIO.0 (pin 11) and specify that it is output
+
 
 
 //------------------------------------------------------------------------------------------------------
-// Monitors one PIR, when motion has been detected the event handler will be called.
+// Monitors two PIRs, when motion has been detected the event handler will be called.
 var PIR = require('./modules/pir/pir.js').PIR;
+var PIR_UpStairs   = new PIR(20, pirTiggerEvent, {log: log}); 		        // Use GPIO.28 (pin 38) as input (from PIR sensor output)
+var PIR_DownStairs = new PIR(21, pirTiggerEvent, {log: log}); 		        // Use GPIO.29 (pin 40) as input (from PIR sensor output)
+
+//------------------------------------------------------------------------------------------------------
+// Define the LedStrip configuration
+var LedStrip = require('./modules/ledStrip/stairsLedStripsHandler.js').LedStrip;
+var LedStrip1 = new LedStrip(17,{log: log});
 
 
-var PIR_UpStairs   = new PIR(20, {log: log}); 		        // Use GPIO.28 (pin 38) as input (from PIR sensor output)
-var PIR_DownStairs = new PIR(21, {log: log}); 		        // Use GPIO.29 (pin 40) as input (from PIR sensor output)
-
-PIR_UpStairs.init();
-PIR_DownStairs.init();
-
-
-var blinkInterval = setInterval(blinkLED, 250); // Run the blinkLED function every 250ms
-
-function blinkLED() { 			        // Function to start blinking
-    if (LED.readSync() === 0) {		    // Check the pin state, if the state is 0 (or off)
-        log.info("Blink ON");
-        console.log("Blink ON");
-        LED.writeSync(1); 		        // Set pin state to 1 (turn LED on)
-    } else {
-        log.info("Blink OFF");
-        console.log("Blink OFF");
-        LED.writeSync(0); 		        // Set pin state to 0 (turn LED off)
-    }
-}
-
-function endBlink() { 			        // Function to stop blinking
-    clearInterval(blinkInterval); 	    // Stop blink intervals
-    LED.writeSync(0); 			        // Turn LED off
-
-    log.info("endBlink");
-    console.log("endBlink");
-}
-
-setTimeout(endBlink,5000); 		        // Stop blinking after 5 seconds
 
 setTimeout(endProgram, 72 * 60 *60000); // End program after 72 hours
 
-/*
-BTN.watch(function (err, value) {
-    if (err) {
-        console.log("BTN.watch error: " + err);
-        throw err;
-    }
+function pirTiggerEvent(gpio) {
     endTime = moment(new Date());
 
-    log.info("BTN changed to value= " + value + " on: " + endTime.toString());
-    console.log("BTN changed to value= " + value + " on: " + endTime.toString());
+    log.info("PIR: " + gpio+  " trigger, on: " + endTime.toString());
 
     var msecDiff = endTime.diff(startTime);
-    console.log("Duration in sec.=" + moment.duration(msecDiff).asSeconds() );
     startTime = moment(new Date());
 
-    if (value==1)
-        console.log("Trigger 1");
+    // led strips not turning on ?
+    if (!activateLedStrips) {
+        if (gpio == PIR_UpStairs.gpio) 
+            activationDirection = 'up';
+        else if (gpio == PIR_DownStairs.gpio) 
+            activationDirection = 'down';            
+        else activationDirection = 'none';
+        activateLedStrips = true;
+        
+        log.info("Activate LedStrips, direction: " + activationDirection);
+        
+        // todo: raise event to activate the ledstrips
+        LedStrip1.on();
+    }
 
-    LED.writeSync(value);
-});
-*/
+};
 
 
 // Unexport GPIO to free resources
 function unExportGpio() {
-    console.log("unExportGpio");
+    log.info("unExportGpio");
     LED.unexport();
-    BTN.unexport();
 }
 
 function endProgram() {
@@ -121,7 +109,7 @@ function endProgram() {
 
 process.on('SIGINT', function () {
     unExportGpio();
-    console.log(APPNAME+" has been terminated.");
+    log.info(APPNAME+" has been terminated.");
     process.exit(10);     // end program with code 10  (forced exit)
 });
 

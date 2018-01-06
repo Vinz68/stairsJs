@@ -20,7 +20,7 @@ var timerId = 0;                            // delay timer id
 
 exports.version = '0.0.2';
 
-function PIR(gpio, options) {
+function PIR(gpio, callback, options) {
     
     if (!(this instanceof PIR)) {
         return new PIR(gpio, options);
@@ -37,35 +37,23 @@ function PIR(gpio, options) {
    
     this.log = options.log.child({module: 'PIR', gpio: this.gpio});  // use bunyan log (from parent), add two keywords to identify which PIR/GPIO
     this.log.info('creating a PIR Handler for gpio:'+ this.gpio);    // debug info (remove later)
+
+    this.callback = callback;
 }
 exports.PIR = PIR;
-
-
-PIR.prototype.init = function () {
-    this.log.info('init: Starting for ' + this.gpio);
-
-
-};
-
-
-PIR.prototype.getPath = function () {
-    return config.slidesDirectory;
-};
 
 
 PIR.prototype.trigger = function (err, value) {
 
     if (err) {
-        console.log("PIR.watch error: " + err);
         self.log.error("PIR.watch error: " + err);
         throw err;
     }
 
     self.log.info('PIR input changed to: ' + value );
-    console.log("PIR input changed to: " + value );
 
-    if (value==1)
-        console.log("Trigger 1");
+    // determine the deadzone, if timeSinceLastTigger > deadzone ...
+    self.callback(self.gpio);
 };
 
 
