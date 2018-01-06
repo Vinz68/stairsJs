@@ -42,13 +42,11 @@ log.info("Starting... " );
 var startTime = moment(new Date());
 var endTime = moment(new Date());
 var LED = new Gpio(17, 'out'); 		        // Use GPIO.0 (pin 11) and specify that it is output
-var BTN = new Gpio(20, 'in', 'both');       // Use GPI0.28 (pin 38) and specify that it is input
-
 
 
 //------------------------------------------------------------------------------------------------------
 // Monitors one PIR, when motion has been detected the event handler will be called.
-var PIR = require('./modules/pirMotionHandler/pirMotionHandler.js').PIR;
+var PIR = require('./modules/pir/pir.js').PIR;
 
 
 var PIR_UpStairs   = new PIR(20, {log: log}); 		        // Use GPIO.28 (pin 38) as input (from PIR sensor output)
@@ -84,6 +82,7 @@ setTimeout(endBlink,5000); 		        // Stop blinking after 5 seconds
 
 setTimeout(endProgram, 72 * 60 *60000); // End program after 72 hours
 
+/*
 BTN.watch(function (err, value) {
     if (err) {
         console.log("BTN.watch error: " + err);
@@ -103,6 +102,7 @@ BTN.watch(function (err, value) {
 
     LED.writeSync(value);
 });
+*/
 
 
 // Unexport GPIO to free resources
