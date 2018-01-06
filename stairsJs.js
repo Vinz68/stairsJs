@@ -37,12 +37,26 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
     }
 });
 
-log.info(APPNAME + " is starting... " );
+log.info("Starting... " );
 
 var startTime = moment(new Date());
 var endTime = moment(new Date());
 var LED = new Gpio(17, 'out'); 		        // Use GPIO.0 (pin 11) and specify that it is output
 var BTN = new Gpio(20, 'in', 'both');       // Use GPI0.28 (pin 38) and specify that it is input
+
+
+
+//------------------------------------------------------------------------------------------------------
+// Monitors one PIR, when motion has been detected the event handler will be called.
+var PIR = require('./modules/pirMotionHandler/pirMotionHandler.js').PIR;
+
+
+var PIR_UpStairs   = new PIR(20, {log: log}); 		        // Use GPIO.28 (pin 38) as input (from PIR sensor output)
+var PIR_DownStairs = new PIR(21, {log: log}); 		        // Use GPIO.29 (pin 40) as input (from PIR sensor output)
+
+PIR_UpStairs.init();
+PIR_DownStairs.init();
+
 
 var blinkInterval = setInterval(blinkLED, 250); // Run the blinkLED function every 250ms
 
@@ -111,7 +125,4 @@ process.on('SIGINT', function () {
     process.exit(10);     // end program with code 10  (forced exit)
 });
 
-/* -----------------------------------------------------
--- new changes
-------------------------------------------------------- */
 
