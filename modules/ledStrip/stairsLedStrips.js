@@ -46,12 +46,7 @@ class StairsLedStrips {
 
     switchLedStrip(index, value) {
         if (index<this.ledStripArray.length) {
-            if (value) {
-                console.log('Turn LedStrip['+index+'] ON (with GPIO:' + this.ledStripArray[index].gpio +')');
-            }
-            else {
-                console.log('Turn LedStrip['+index+'] OFF (with GPIO:' + this.ledStripArray[index].gpio +')');
-            }
+            console.log('Turn LedStrip['+index+'] to value='+value+' (GPIO-' + this.ledStripArray[index].gpio +')');
             this.ledStripArray[index].writeSync(value); 		     // Set pin state to 0 or 1 (turn LedStrip off or on)
         }
     }  
@@ -66,7 +61,7 @@ class StairsLedStrips {
             } else {
                 // turn stairs ledstips off after some time
                 clearInterval(this.onOffTimer);
-                setTimeout(this.offUpDirection.bind(this), this.keepOnDelay );
+                setTimeout(this.turnOff.bind(this), this.keepOnDelay );
             }
         }
         else if (this.direction =='downstairs') {
@@ -77,7 +72,7 @@ class StairsLedStrips {
             } else {
                 // turn stairs ledstips off after some time
                 clearInterval(this.onOffTimer);
-                setTimeout(this.offDownDirection.bind(this), this.keepOnDelay );
+                setTimeout(this.turnOff.bind(this), this.keepOnDelay );
             }
         }
     }
@@ -147,6 +142,19 @@ class StairsLedStrips {
     
     turnOff() {
         this.activated = true; 
+
+        if (this.direction =='upstairs')
+        {
+            this.offUpDirection();
+            return;
+        }
+
+        if (this.direction =='downstairs')
+        {
+            this.offDownDirection();
+            return;
+        }
+
         this.direction = 'none';
 
         for(var i = 0; i < this.ledStripArray.length; i++){
@@ -163,7 +171,7 @@ class StairsLedStrips {
             this.direction = 'upstairs';
             this.ledStripArrayIndex = 0;    
                     
-            this.onOffTimer = setInterval(this.sequenceLedStripOff.bind(this),this.delay );
+            this.onOffTimer = setInterval(this.sequenceLedStripOff.bind(this), this.delay );
         }
     }
     
@@ -171,12 +179,12 @@ class StairsLedStrips {
         if (this.activated) {
             console.log("StairsLedStrips::offDownDirection");
 
-            this.direction = 'upstairs';
+            this.direction = 'downstairs';
             this.ledStripArrayIndex = this.ledStripArray.length;    
                     
-            this.onOffTimer = setInterval(this.sequenceLedStripOff.bind(this),this.delay );
+            this.onOffTimer = setInterval(this.sequenceLedStripOff.bind(this), this.delay );
         }      
-    };  
+    }
     
     unexport() {
         this.ledStripStair[i].unexport(); 
