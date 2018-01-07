@@ -59,7 +59,9 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
     //------------------------------------------------------------------------------------------------------
     // Define the LedStrips configuration of the stairs (start downstairs to upstairs led strips)
     var StairsLedStrips = require('./modules/ledStrip/stairsLedStrips.js').StairsLedStrips;
-    var LedStrips = new StairsLedStrips(17,{log: log});
+
+    var gpioArray = [ 17, 18, 27, 22, 23, 24, 25, 4, 5, 6, 13, 19, 26, 12];
+    var LedStrips = new StairsLedStrips(gpioArray,{log: log});
 
     function pirTiggerEvent(gpio) {
         endTime = moment(new Date());
@@ -82,8 +84,6 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
                 console.log("Activate LedStrips, direction: " + LedStrips.direction);
                 log.info("Activate LedStrips, direction: " + LedStrips.direction);
             }
-
-            LedStrips.turnOff();
         }
     };
 
