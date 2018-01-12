@@ -205,7 +205,4 @@ class StairsLedStrips {
         }
      }
 }
-
 exports.StairsLedStrips = StairsLedStrips;
-
-
