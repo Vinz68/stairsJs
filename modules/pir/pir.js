@@ -8,10 +8,8 @@
 "use strict";
 
 var Gpio = require('onoff').Gpio;           // Include onoff to interact with the GPIO
-var config = require('./pirConfig.json');   // The configuration file for this module 
-var debounceTimeout = 20000;                // debounce time of input pin (in msec). Default set to 2000 msec (=2 sec)
 
-exports.version = '0.0.3';
+exports.version = '0.0.5';
 
 class PIR {
 
@@ -34,14 +32,10 @@ class PIR {
             throw err;
         }
 
-        this.log.info('PIR-GPIO-'+this.gpio+' input signal changed to:' + value);
-        console.log('PIR-GPIO-'+this.gpio+' input signal changed to:' + value);
-
         if (value==1) {
             this.log.info('PIR trigger detected on GPIO:' + this.gpio);
-            console.log('PIR trigger detected on GPIO:' + this.gpio);                 
+            //console.log('PIR trigger detected on GPIO:' + this.gpio);                 
             this.callback(this.gpio);
-       
         }
     }
 
