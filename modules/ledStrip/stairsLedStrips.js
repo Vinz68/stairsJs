@@ -38,7 +38,7 @@ class StairsLedStrips {
         this.direction = 'none'    // direction turning on of off
 
         this.keepOnDelay = 10000;  // delay keep all stairs on (in msec)
-        this.delay = 200;          // delay in msec between ledstrips on/off
+        this.delay = 100;          // delay in msec between ledstrips on/off
         this.onOffTimer = 0;
         this.ledStripArrayIndex = 0;
          
