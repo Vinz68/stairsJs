@@ -2,7 +2,7 @@
    stairsJs - nodeJS program for RPI-3 to automatically drive stairs LED lights (14 steps), using IR detection.
    - using bunyan as logging framework
    - using onoff as GPIO package
-   2018-01-07 Vincent van Beek
+   2018-01-22 Vincent van Beek
 ----------------------------------------------------------------------------------------------------- */
 "use strict";
 var express = require("express");           // Express web application framework. http://expressjs.com/
@@ -55,8 +55,8 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
     //------------------------------------------------------------------------------------------------------
     // Monitors two PIRs, when motion has been detected the event handler will be called.
     var PIR = require('./modules/pir/pir.js').PIR;
-    var PIR_UpStairs   = new PIR(21, pirTiggerEvent, {log: log}); 		        // Use GPIO.28 (pin 38) as input (from PIR sensor output)
-    var PIR_DownStairs = new PIR(20, pirTiggerEvent, {log: log}); 		        // Use GPIO.29 (pin 40) as input (from PIR sensor output)
+    var PIR_UpStairs   = new PIR(20, pirTiggerEvent, {log: log}); 		        // Use GPIO.28 (pin 38) as input (from PIR sensor output)
+    var PIR_DownStairs = new PIR(21, pirTiggerEvent, {log: log}); 		        // Use GPIO.29 (pin 40) as input (from PIR sensor output)
 
     //------------------------------------------------------------------------------------------------------
     // Define the LedStrips configuration of the stairs (start downstairs to upstairs led strips)
@@ -68,9 +68,7 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
     // Callback, when PIR detects motion
     function pirTiggerEvent(gpio) {
         var now = new Date();
-        console.log("PIR: " + gpio+  " trigger, on: " + now);
        
-
         // When enabled, do not light stairs during daylight
         if (config.disableDuringDaylight) {
 
@@ -80,28 +78,29 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
             var times = SunCalc.getTimes(now, config.latitude, config.longitude);
 
             if ( (now < times.sunriseEnd ) || (now > times.sunsetStart)) {
-                    console.log("stairLight - enable");
+                    console.log("pirTriggerEvent: its dark enough to enable stairs LedStrips");
             }
-            else
-            {
-                    console.log("stairLight - disable");
-                    // stop processing ; do not enable led lights.
+            else {
+                    // Its currently between sunrise and sunset and we should have enough daylight.
+                    // Stop processing ; disable stairs LedStrips.
                     return;
             }
         }
 
 
-        // led strips not turning on ?
+        // Led strips not turning on ?
         if (!LedStrips.activated) {
             if (gpio == PIR_UpStairs.gpio) {
-                LedStrips.onDownDirection();
+                // PIR-UpStairs detected motion => turn stairs on from bottom to top
+                LedStrips.onUpDirection();            
             } else if (gpio == PIR_DownStairs.gpio) {
-                LedStrips.onUpDirection();
+                // PIR-DownStairs detected motion => turn stairs on from top to bottom
+                LedStrips.onDownDirection(); 
             }
 
-            if (LedStrips.activated)  // Led Strips just activated ?
-            {
+            if (LedStrips.activated) {  // Led Strips just activated ?
                 log.info("LedStrips activated. Direction: " + LedStrips.direction);
+                console.log("LedStrips activated. Direction: " + LedStrips.direction);
             }
         }
     };
