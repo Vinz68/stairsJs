@@ -11,7 +11,8 @@ var bodyParser = require("body-parser");    // Parse incoming request bodies in 
 var Gpio = require('onoff').Gpio;           // Include onoff to interact with the GPIO
 var moment = require('moment');             // Moment is used to determine duration(s)
 
-var SunCalc = require('suncalc');	    // SunCals is used to used sunrise / sunset time.
+var SunCalc = require('suncalc');	        // SunCalc is used to used sunrise / sunset time.
+var config = require('./configAmsterdam.json');  // The configuration for sunCalc
 
 var APPNAME = "stairsJs";                   // Name of this app used here and there
 var PORT = process.env.PORT || 8088;        // Node will listen on port from environment setting, or when not set to port number...
@@ -66,27 +67,28 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
     //---------------------------------------------------
     // Callback, when PIR detects motion
     function pirTiggerEvent(gpio) {
-        endTime = moment(new Date());
+        var now = new Date();
+        console.log("PIR: " + gpio+  " trigger, on: " + now);
+       
 
-        console.log("PIR: " + gpio+  " trigger, on: " + endTime.toString());
+        // When enabled, do not light stairs during daylight
+        if (config.disableDuringDaylight) {
 
-        var msecDiff = endTime.diff(startTime);
-        startTime = moment(new Date());
-        console.log("Time since last trigger (inMsec):" + msecDiff);
+            // get today's sunlight times for my location 
+            // use 'https://www.gps-coordinates.net/' to find your 
+            // location latitude and longitude (and configure them in config.json)
+            var times = SunCalc.getTimes(now, config.latitude, config.longitude);
 
-
-	// get today's sunlight times for Amsterdam
-	var times = SunCalc.getTimes(new Date(), 51.5, -0.1);
-
-	// format sunriseEnd time (bottom edge of the sun touches the horizon) from the Date object
-	var sunriseEndStr = times.sunriseEnd.getHours() + ':' + times.sunriseEnd.getMinutes();
-
-        // format sunsetStart time (bottom edge of the sun touches the horizon) from the Date object
-        var sunsetStartStr = times.sunsetStart.getHours() + ':' + times.sunsetStart.getMinutes();
-
-        console.log("stairLight should work before: " + sunriseEndStr + " and after: " + sunsetStartStr );
-
-        console.log("stairLight should work before: " + times.sunriseEnd + " and after " + times.sunsetStart );
+            if ( (now < times.sunriseEnd ) || (now > times.sunsetStart)) {
+                    console.log("stairLight - enable");
+            }
+            else
+            {
+                    console.log("stairLight - disable");
+                    // stop processing ; do not enable led lights.
+                    return;
+            }
+        }
 
 
         // led strips not turning on ?

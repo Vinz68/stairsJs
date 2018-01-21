@@ -4,8 +4,9 @@
    2018-01-21 Vincent van Beek
 ----------------------------------------------------------------------------------------------------- */
 "use strict";
-var SunCalc = require('suncalc');	    // SunCals is used to used sunrise / sunset time.
-var config = require('./config.json');	    // The configuration for this file
+var SunCalc = require('suncalc');                       // SunCalc is used to used sunrise / sunset time.
+var config = require('./configAmsterdam.json');         // The configuration for this test file
+                                                        // use 'https://www.gps-coordinates.net/' to find your location -> latitude and longitude
 
 /* -----------------------------------------------------
     Start of main program
