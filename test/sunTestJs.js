@@ -5,8 +5,7 @@
 ----------------------------------------------------------------------------------------------------- */
 "use strict";
 var SunCalc = require('suncalc');	    // SunCals is used to used sunrise / sunset time.
-
-
+var config = require('./config.json');	    // The configuration for this file
 
 /* -----------------------------------------------------
     Start of main program
@@ -16,7 +15,7 @@ var SunCalc = require('suncalc');	    // SunCals is used to used sunrise / sunse
 
         // get today's sunlight times for Amsterdam
         var now = new Date();
-        var times = SunCalc.getTimes(now, 51.5, -0.1);
+        var times = SunCalc.getTimes(now, config.latitude, config.longitude);
 
         console.log("stairLight should work today before: " + times.sunriseEnd + " and after " + times.sunsetStart );
 
