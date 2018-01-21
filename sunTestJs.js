@@ -13,18 +13,20 @@ var SunCalc = require('suncalc');	    // SunCals is used to used sunrise / sunse
 ------------------------------------------------------- */
 // using 'Immediately-Invoked Function Expression (IIFE)' pattern
 (function(){ 
+
         // get today's sunlight times for Amsterdam
-        var times = SunCalc.getTimes(new Date(), 51.5, -0.1);
+        var now = new Date();
+        var times = SunCalc.getTimes(now, 51.5, -0.1);
 
-        // format sunriseEnd time (bottom edge of the sun touches the horizon) from the Date object
-        var sunriseEndStr = times.sunriseEnd.getHours() + ':' + times.sunriseEnd.getMinutes();
+        console.log("stairLight should work today before: " + times.sunriseEnd + " and after " + times.sunsetStart );
 
-        // format sunsetStart time (bottom edge of the sun touches the horizon) from the Date object
-        var sunsetStartStr = times.sunsetStart.getHours() + ':' + times.sunsetStart.getMinutes();
 
-        console.log("stairLight should work before: " + sunriseEndStr + " and after: " + sunsetStartStr );
-
-        console.log("stairLight should work before: " + times.sunriseEnd + " and after " + times.sunsetStart );
-
+        if ( (now < times.sunriseEnd ) || (now > times.sunsetStart)) {
+                console.log("stairLight - enable");
+        }
+        else
+        {
+                console.log("stairLight - disable");
+        }
 
 })();
