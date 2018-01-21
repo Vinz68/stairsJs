@@ -1,4 +1,5 @@
 /logs/*.log
+/logs/*.log.*
 /node_modules
 npm-debug.log
 .DS_Store
