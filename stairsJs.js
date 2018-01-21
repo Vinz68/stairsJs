@@ -84,11 +84,9 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
         // format sunsetStart time (bottom edge of the sun touches the horizon) from the Date object
         var sunsetStartStr = times.sunsetStart.getHours() + ':' + times.sunsetStart.getMinutes();
 
-       console.log("stairLight should work before: " + sunriseEndStr + " and after: " + sunsetStartStr );
+        console.log("stairLight should work before: " + sunriseEndStr + " and after: " + sunsetStartStr );
 
-       console.log("stairLight should work before: " + times.sunriseEnd + " and after " + times.sunsetStart );
-
-
+        console.log("stairLight should work before: " + times.sunriseEnd + " and after " + times.sunsetStart );
 
 
         // led strips not turning on ?
