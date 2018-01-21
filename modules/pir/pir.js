@@ -32,6 +32,8 @@ class PIR {
             throw err;
         }
 
+        this.log.info("PIR signal changed to: " + value + " on: " + Date() );
+
         if (value==1) {
             this.log.info('PIR trigger detected on GPIO:' + this.gpio);
             //console.log('PIR trigger detected on GPIO:' + this.gpio);                 

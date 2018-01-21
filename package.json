@@ -10,6 +10,7 @@
     "moment": "^2.20.1",
     "onoff": "^1.1.9",
     "request": "^2.83.0",
+    "suncalc": "^1.8.0",
     "uuid-v4": "^0.1.0"
   },
   "devDependencies": {
