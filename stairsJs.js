@@ -12,7 +12,7 @@ var Gpio = require('onoff').Gpio;           // Include onoff to interact with th
 var moment = require('moment');             // Moment is used to determine duration(s)
 
 var SunCalc = require('suncalc');	        // SunCalc is used to used sunrise / sunset time.
-var config = require('./configAmsterdam.json');  // The configuration for sunCalc
+var config = require('./config.json');      // The configuration for sunCalc
 
 var APPNAME = "stairsJs";                   // Name of this app used here and there
 var PORT = process.env.PORT || 8088;        // Node will listen on port from environment setting, or when not set to port number...
