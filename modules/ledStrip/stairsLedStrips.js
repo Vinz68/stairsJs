@@ -9,13 +9,16 @@
 //      offDownDirection - turn stairs led strips off, starting at top (last ledstrip) to bottom (first ledstrip)
 //      offUpDirection   - turn stairs led strips off, starting at bottom (first ledstrip) to top (last ledstrip)
 //
-// 2018-01-07 Vincent van Beek
+// 2018-01-07 Vincent van Beek  v0.0.5  => tested version
+// 2018-03-13 Vincent van Beek  v0.0.6  => Update: config file added for 2 settings (keepOnDelay and delayBetweenStairs)
 //-----------------------------------------------------------------------------------------------------
 "use strict";
+exports.version = '0.0.6';
 
 var Gpio = require('onoff').Gpio;           // Include onoff to interact with the GPIO
-exports.version = '0.0.5';
-
+var config = require('./config.json');      // The configuration 
+                                            //    config.keepOnDelay        = time in msec the stairs stays "on" (lights on time)
+                                            //    config.delayBetweenStairs = time in msec between each stair to turn on (after each other)
 
 class StairsLedStrips {
 
@@ -37,8 +40,8 @@ class StairsLedStrips {
         this.activated = false;    // busy turning on or off
         this.direction = 'none'    // direction turning on of off
 
-        this.keepOnDelay = 10000;  // delay keep all stairs on (in msec)
-        this.delay = 100;          // delay in msec between ledstrips on/off
+        this.keepOnDelay = config.keepOnDelay;  // delay keep all stairs on (in msec)
+        this.delay = config.delayBetweenStairs; // delay in msec between ledstrips on/off
         this.onOffTimer = 0;
         this.ledStripArrayIndex = 0;
          
