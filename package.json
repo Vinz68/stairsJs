@@ -1,27 +1,27 @@
 {
   "name": "stairsjs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Automatically drives the stair LED-lights (14 steps), using a PIR as trigger device.",
   "main": "stairsJs.js",
   "dependencies": {
-    "body-parser": "^1.18.2",
+    "body-parser": "^1.18.3",
     "bunyan": "^1.8.12",
-    "express": "^4.16.2",
-    "moment": "^2.20.1",
-    "onoff": "^1.1.9",
-    "request": "^2.83.0",
+    "express": "^4.16.4",
+    "moment": "^2.23.0",
+    "onoff": "^3.2.2",
+    "request": "^2.88.0",
     "suncalc": "^1.8.0",
     "uuid-v4": "^0.1.0"
   },
   "devDependencies": {
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.0",
     "gulp-env": "^0.4.0",
-    "gulp-mocha": "^5.0.0",
-    "gulp-nodemon": "^2.2.1",
-    "gulp-uglify": "^3.0.0",
-    "should": "^13.2.0",
-    "sinon": "^4.1.3",
-    "supertest": "^3.0.0"
+    "gulp-mocha": "^6.0.0",
+    "gulp-nodemon": "^2.4.2",
+    "gulp-uglify": "^3.0.1",
+    "should": "^13.2.3",
+    "sinon": "^7.2.2",
+    "supertest": "^3.3.0"
   },
   "scripts": {
     "start": "node stairsJs.js",
