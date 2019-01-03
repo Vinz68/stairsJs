@@ -6,10 +6,24 @@ It uses logging (bunyan) and of course GPIO (onoff).
 The goal of this project is to build a nice led-light for my stairs (which I renovated recently) and to learn the raspberry PI, nodeJS and GPIO programming
 
 ## Hardware
-TODO, make list of each component + link to spec.
+List of each component and link to specification
+
+![GitHub Logo](/images/logo.png)
+
+
+| Picture 	| Quantity 	| Component | Remark / Chosen Mode 	|
+|---	|---	|---	|---	|
+| ![Component1](/doc/components/Components_files/Image1.png)    |  	|  	| 	|
+| ![Component1](/doc/components/Components_files/Image2.png) 	|  	|  	| 	|
+| ![Component1](/doc/components/Components_files/Image3.png) 	|  	|  	|  	|
+| ![Component1](/doc/components/Components_files/Image4.png) 	|  	|  	|  	|
+| ![Component1](/doc/components/Components_files/Image5.png) 	|  	|  	|  	|
+| ![Component1](/doc/components/Components_files/Image6.png) 	|  	|  	|  	|
+| ![Component1](/doc/components/Components_files/Image7.png) 	|  	|  	|  	|
 
 ## Electric Scheme
-TODO, display all connection/wires
+
+![Schema](/doc/components/Components_files/Schema.png) 
 
 ## Pictures
 
