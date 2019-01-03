@@ -1,8 +1,8 @@
-# Show (formated) log file
-bunyan stairJs.log
-
-# .. in short notation
+# Show (formated) log file in short notation
 bunyan -o short stairsJs.log
+
+# Show (formated) log file
+bunyan stairsJs.log
 
 # View multiple files
 bunyan stairsJs.log [bar.log ...]
