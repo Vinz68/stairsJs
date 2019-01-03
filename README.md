@@ -1,6 +1,5 @@
 ## stairsJs
-is a minimal NodeJS app for a rapberry pi-3 to automatically drive the stairs LED lights (14 steps) using IR detection.
-It uses logging (bunyan) and of course GPIO (onoff).
+is a minimal NodeJS app for a rapberry pi-3 to automatically drive the stairs LED lights (14 steps) using passive infra red (PIR) detection. It uses logging (bunyan) and of course GPIO (onoff).
 
 ## Purpose 
 The goal of this project is to build a nice led-light for my stairs (which I renovated recently) and to learn the raspberry PI, nodeJS and GPIO programming
@@ -23,18 +22,13 @@ node -v
 npm -v
 ```
 
-To install node + npm execute:
-``` bash
-curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
-sudo apt-get install -y nodejs
-```
 
 ***Installation steps:***
 
 1. Fork this package to your github account
 
 
-2. Clone it from github to your server 
+2. or just Clone it from github to your server 
 ``` bash
 git clone https://github.com/[your-account-name-here]/stairsJs.git
 ```
