@@ -13,22 +13,13 @@ List of each component and link to specification
 
 | Picture 	| Quantity 	| Component | Remark / Chosen Mode 	|
 |---	|---	|---	|---	|
-| ![Component1](/doc/components/Components_files/Image01.png)   | 2 	| Passive Infra Red (PIR) Detector 	| SR501 HC-SR501
-IR Pyroelectric Infrared PIR module Motion Sensor Detector	|
-| ![Component2](/doc/components/Components_files/Image02.png) 	| #stairs 	|  Relays
-(to switch on the Led Strips with 12 VDC)	| Depending the number of stairs, buy enough relais, or combine with one or more 8 channel relays.
-8 Channel DC 5V Relay	|
-| ![Component3](/doc/components/Components_files/Image03.png) 	| #stairs 	| Flexible Led Strips 	| Buy two or more  5m led strip and cut for each stair the needed stair length
-SMD 2835 Flexible LED Strip 120led/m 600Leds 	|
-| ![Component4](/doc/components/Components_files/Image04.png) 	| 1 	| 5 Volt Power supply 	|  Stable 5V for the Controller
-DC step-down Converter Module 24 / 12V to 5V / 5A power supply	|
-| ![Component5](/doc/components/Components_files/Image05.png) 	| 1 	|  12 Volts Power supply
-for the Led Strips	| Stable 12 Volts for the Led Strips
-
-switching power supply 100W 12v 8A,Single Output ac-dc voltage converter for Led Strip,AC110V/220V Transformer to DC 12V 	|
+| ![Component1](/doc/components/Components_files/Image01.png)   | 2 	| Passive Infra Red (PIR) Detector 	| SR501 HC-SR501 IR Pyroelectric Infrared PIR module Motion Sensor Detector	|
+| ![Component2](/doc/components/Components_files/Image02.png) 	| #stairs 	|  Relays (to switch on the Led Strips with 12 VDC)	| Depending the number of stairs, buy enough relais, or combine with one or more 8 channel relays. 8 Channel DC 5V Relay	|
+| ![Component3](/doc/components/Components_files/Image03.png) 	| #stairs 	| Flexible Led Strips 	| Buy two or more  5m led strip and cut for each stair the needed stair length. SMD 2835 Flexible LED Strip 120led/m 600Leds 	|
+| ![Component4](/doc/components/Components_files/Image04.png) 	| 1 	| 5 Volt Power supply 	|  Stable 5V for the Controller DC step-down Converter Module 24 / 12V to 5V / 5A power supply	|
+| ![Component5](/doc/components/Components_files/Image05.png) 	| 1 	|  12 Volts Power supply for the Led Strips	| Stable 12 Volts for the Led Strips . Switching power supply 100W 12v 8A,Single Output ac-dc voltage converter for Led Strip,AC110V/220V Transformer to DC 12V 	|
 | ![Component6](/doc/components/Components_files/Image06.png) 	| 1 	| Controller, single board mini computer. 	| Raspberry Pi 3 Model B Board 1GB LPDDR2 BCM2837 Quad-Core Ras PI3 B,PI 3B,PI 3 B with WiFi&Bluetooth 	|
-| ![Component7](/doc/components/Components_files/Image07.png) 	| 1	|  	|  Dimmer for the Led Strips
-LED Dimmer dedicated DC 12V 24V 8A	|
+| ![Component7](/doc/components/Components_files/Image07.png) 	| 1	|  	|  Dimmer for the Led Strips LED Dimmer dedicated DC 12V 24V 8A	|
 
 ## Electric Scheme
 
