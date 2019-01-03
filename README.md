@@ -28,10 +28,11 @@ To install node + npm execute:
 curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
+See also [w3schools](https://www.w3schools.com/nodejs/nodejs_raspberrypi.asp) for more details to install raspbian and node.
 
 ***Installation steps:***
 
-1. Fork this package to your github account
+1. Fork this package to your github account and/or
 
 
 2. Clone it from github to your server 
@@ -52,13 +53,14 @@ NOTE: Use npm install --only=production to install only dependencies, and not de
 use one of the following commands
 ``` bash
 node stairsJs
+
 npm start
 ```
 or use PM2 (auto starts / auto restart the program after boot)
 ``` bash
 pm2 start stairsJs.js
 ```
-For the last option you need to install PM2. TODO: Provide link/instructions
+For the last option you need to install [PM2](http://pm2.keymetrics.io/)
 
 
 5. Execute the unit- and integration tests (todo)
@@ -73,11 +75,11 @@ Report a bug or a suggestion by posting an issue on the git repository (https://
  
 ## TODO List:
  - [ ] include code quality check (JSLint or something else..)     
- - [x] add hardware overview
- - [x] add electric scheme
- - [x] add pictures
- - [ ] add PM2 link/instructions ?
- - [ ] create a client / gui front end to show status and gain control of the stairs logic
+ - [ ] create a GUI client to show status and gain control of the stairs logic, using web-technology. This is currently under development, see [stairsJs-control-panel](https://github.com/Vinz68/stairsJs-control-panel)
+
+
+If you used this to build your own stairs-led-light then send me a picture ; love to see it !.
+
 
  
 
