@@ -11,8 +11,8 @@ List of each component with a link to specification and a global schematic overv
 
 
 ## Pictures
-![stairs](https://github.com/Vinz68/stairsJs/doc/pictures/picture400.png) 
-![board](https://github.com/Vinz68/stairsJs//doc/pictures/board400.png) 
+![stairs](doc/pictures/picture400.png) 
+![board](/doc/pictures/board400.png) 
 
 ## Installation notes
 
