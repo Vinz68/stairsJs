@@ -16,7 +16,7 @@ var fs = require('fs');                     // We will use the native file syste
 const path = require('path');
 
 var bodyParser = require("body-parser");    // Parse incoming request bodies in a middleware before your handlers,
-                                            // available under the req.body property. See https://github.com/expressjs/body-parser
+// available under the req.body property. See https://github.com/expressjs/body-parser
 var Gpio = require('onoff').Gpio;           // Include onoff to interact with the GPIO
 var moment = require('moment');             // Moment is used to determine duration(s)
 
@@ -30,12 +30,12 @@ var bunyan = require("bunyan");             // Bunyan is a simple and fast JSON 
 var log = bunyan.createLogger({             // Create a logger, to log application errors (and debug info)
     name: APPNAME,                          // use the application name
     src: true,                              // show source filename, function and line number
-                                            // Note: set to false in the production environment since it is time consuming
+    // Note: set to false in the production environment since it is time consuming
     streams: [
         {
             level: 'info',                  // log level INFO and above to rotating file
             type: "rotating-file",          // Log files will "roll" over (automatic deletion after configured period)
-            path: "./logs/"+APPNAME+".log", // Path and filename of the log file
+            path: "./logs/" + APPNAME + ".log", // Path and filename of the log file
             period: "1d",                   // daily rotation
             count: 30                       // keep 30 file copies (~1 month)
         }
@@ -46,34 +46,55 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
     }
 });
 
+/* Possible current status 
+            "0" : "Alwyas led strips off.",
+            "10": "Automatic, when PIR is activated.",
+            "20": "Automatic, between sunset and sunrise.",
+            "30": "Always led strips on.",
+            
+            "91": "Test1 activated.",
+            "92": "Test2 activated.",
+            "93": "Test3 activated.",
+*/
+var currentState = 10;
+var prevState = 10;
+
 
 
 /* -----------------------------------------------------
     Start of main program
 ------------------------------------------------------- */
 // using 'Immediately-Invoked Function Expression (IIFE)' pattern
-(function(){ 
+(function () {
     log.info("-----------------------------------------------");
-    log.info("Started on: " + Date() );
+    log.info("Started on: " + Date());
     log.info("-----------------------------------------------");
 
     // Used to determine duration
     var startTime = moment(new Date());
     var endTime = moment(new Date());
 
+    if (config.disableDuringDaylight) {
+        currentState = 20;
+        prevState = currentState;
+    }
+
+
     //------------------------------------------------------------------------------------------------------
     // Monitors two PIRs, when motion has been detected the event handler will be called.
     log.info("Setup PIRs.");
     var PIR = require('./modules/pir/pir.js').PIR;
-    var PIR_UpStairs   = new PIR(20, pirTiggerEvent, {log: log}); 		        // Use GPIO.28 (pin 38) as input (from PIR sensor output)
-    var PIR_DownStairs = new PIR(21, pirTiggerEvent, {log: log}); 		        // Use GPIO.29 (pin 40) as input (from PIR sensor output)
+    var PIR_UpStairs = new PIR(20, pirTiggerEvent, { log: log }); 		        // Use GPIO.28 (pin 38) as input (from PIR sensor output)
+    var PIR_DownStairs = new PIR(21, pirTiggerEvent, { log: log }); 		        // Use GPIO.29 (pin 40) as input (from PIR sensor output)
 
     //------------------------------------------------------------------------------------------------------
     // Define the LedStrips configuration of the stairs (start downstairs to upstairs led strips)
     log.info("Setup Ledstrips");
     var StairsLedStrips = require('./modules/ledStrip/stairsLedStrips.js').StairsLedStrips;
-    var gpioArray = [ 17, 18, 27, 22, 23, 24, 25, 4, 5, 6, 13, 19, 26, 12];
-    var LedStrips = new StairsLedStrips(gpioArray,{log: log});
+    var gpioArray = [17, 18, 27, 22, 23, 24, 25, 4, 5, 6, 13, 19, 26, 12];
+    var LedStrips = new StairsLedStrips(gpioArray, { log: log });
+
+
 
     //------------------------------------------------------------------------------------------------------
     // Serve the 'StairsJS Control Panel' page 
@@ -81,8 +102,8 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
     log.info("Setup webserver for 'StairsJs Control Panel' ");
     app.use(express.static(path.join(__dirname, 'build')));
 
-    app.get('/', function(req, res) {
-      res.sendFile(path.join(__dirname, 'build', 'index.html'));
+    app.get('/', function (req, res) {
+        res.sendFile(path.join(__dirname, 'build', 'index.html'));
     });
 
     //--------------------------------------------------------------------------------------------------------
@@ -99,26 +120,52 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
     app.get('/suncalc', function (req, res, next) {
         log.info('suncalc requested. returning the json with sunrise and sunset');
 
-        var myResult = { "sunset":"", "sunrise": "" };
+        var myResult = { "sunset": "", "sunrise": "" };
 
         // get today's sunlight times for my location 
         // use 'https://www.gps-coordinates.net/' to find your 
         // location latitude and longitude (and configure them in config.json)
         var sunCalcObject = sunCalc.getTimes(new Date(), config.latitude, config.longitude);
 
-        myResult.sunrise =  checkTime(sunCalcObject.sunrise.getHours()) + ':' + 
-                            checkTime(sunCalcObject.sunrise.getMinutes()) + ':' + 
-                            checkTime(sunCalcObject.sunrise.getSeconds());
+        myResult.sunrise = checkTime(sunCalcObject.sunrise.getHours()) + ':' +
+            checkTime(sunCalcObject.sunrise.getMinutes()) + ':' +
+            checkTime(sunCalcObject.sunrise.getSeconds());
 
-        myResult.sunset =   checkTime(sunCalcObject.sunset.getHours()) + ':' + 
-                            checkTime(sunCalcObject.sunset.getMinutes()) + ':' + 
-                            checkTime(sunCalcObject.sunset.getSeconds());
+        myResult.sunset = checkTime(sunCalcObject.sunset.getHours()) + ':' +
+            checkTime(sunCalcObject.sunset.getMinutes()) + ':' +
+            checkTime(sunCalcObject.sunset.getSeconds());
 
         res.contentType('application/json');
-        res.send( JSON.stringify(myResult) );
+        res.send(JSON.stringify(myResult));
     });
 
-    
+
+    //--------------------------------------------------------------------------------------------------------
+    // status    => Send the status of this program 
+    app.get('/status', function (req, res, next) {
+        log.info('status requested. returning the json...');
+
+        var myResult = { "currentState": "offline", "disableDuringDaylight": "false" };
+
+        if (currentState == 0) {
+            myResult.currentState = "Always, led strips off.";
+        }
+        else if (currentState == 10) {
+            myResult.currentState = "Automatic, when PIR is activated.";
+        }
+        else if (currentState == 20) {
+            myResult.currentState = "Automatic, between sunset and sunrise.";
+        }
+        else if (currentState == 30) {
+            myResult.currentState = "Always. led strips on.";
+        }
+        myResult.disableDuringDaylight = config.disableDuringDaylight;
+
+        res.contentType('application/json');
+        res.send(JSON.stringify(myResult));
+    });
+
+
     var server = app.listen(PORT, function () {
         // Log that we have started and accept incomming connections on the configured port
         log.info(APPNAME + ": Control Panel is ready and listening on port: " + PORT);
@@ -128,16 +175,16 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
 
     function checkTime(i) {
         if (i < 10) {
-          i = "0" + i;
+            i = "0" + i;
         }
         return i;
-      }
+    }
 
     //---------------------------------------------------
     // Callback, when PIR detects motion
     function pirTiggerEvent(gpio) {
         var now = new Date();
-       
+
         // When enabled, do not light stairs during daylight
         if (config.disableDuringDaylight) {
 
@@ -146,13 +193,13 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
             // location latitude and longitude (and configure them in config.json)
             var times = sunCalc.getTimes(now, config.latitude, config.longitude);
 
-            if ( (now < times.sunriseEnd ) || (now > times.sunsetStart)) {
-                    console.log("pirTriggerEvent: its dark enough to enable stairs LedStrips");
+            if ((now < times.sunriseEnd) || (now > times.sunsetStart)) {
+                console.log("pirTriggerEvent: its dark enough to enable stairs LedStrips");
             }
             else {
-                    // Its currently between sunrise and sunset and we should have enough daylight.
-                    // Stop processing ; disable stairs LedStrips.
-                    return;
+                // Its currently between sunrise and sunset and we should have enough daylight.
+                // Stop processing ; disable stairs LedStrips.
+                return;
             }
         }
 
@@ -161,10 +208,10 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
         if (!LedStrips.activated) {
             if (gpio == PIR_UpStairs.gpio) {
                 // PIR-UpStairs detected motion => turn stairs on from bottom to top
-                LedStrips.onUpDirection();            
+                LedStrips.onUpDirection();
             } else if (gpio == PIR_DownStairs.gpio) {
                 // PIR-DownStairs detected motion => turn stairs on from top to bottom
-                LedStrips.onDownDirection(); 
+                LedStrips.onDownDirection();
             }
 
             if (LedStrips.activated) {  // Led Strips just activated ?
@@ -185,7 +232,7 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
     // Handle CTRL-C and termination. 
     process.on('SIGINT', function () {
         unExportGpio();
-        log.info(APPNAME+" has been terminated.");
+        log.info(APPNAME + " has been terminated.");
         process.exit(1);     // end program with code 1 (forced exit)
     });
 
