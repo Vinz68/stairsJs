@@ -16,7 +16,7 @@ var fs = require('fs');                     // We will use the native file syste
 const path = require('path');
 
 var bodyParser = require("body-parser");    // Parse incoming request bodies in a middleware before your handlers,
-// available under the req.body property. See https://github.com/expressjs/body-parser
+                                            // available under the req.body property. See https://github.com/expressjs/body-parser
 var Gpio = require('onoff').Gpio;           // Include onoff to interact with the GPIO
 var moment = require('moment');             // Moment is used to determine duration(s)
 
@@ -29,8 +29,8 @@ var PORT = process.env.PORT || 9000;        // Node will listen on port from env
 var bunyan = require("bunyan");             // Bunyan is a simple and fast JSON logging library. https://github.com/trentm/node-bunyan
 var log = bunyan.createLogger({             // Create a logger, to log application errors (and debug info)
     name: APPNAME,                          // use the application name
-    src: true,                              // show source filename, function and line number
-    // Note: set to false in the production environment since it is time consuming
+    src: false,                             // show source filename, function and line number
+                                            // Note: set to false in the production environment since it is time consuming
     streams: [
         {
             level: 'info',                  // log level INFO and above to rotating file
@@ -46,18 +46,23 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
     }
 });
 
-/* Possible current status 
-            "0" : "Alwyas led strips off.",
-            "10": "Automatic, when PIR is activated.",
-            "20": "Automatic, between sunset and sunrise.",
-            "30": "Always led strips on.",
+
+const currentStateOptions = [               // all possible program states
+            { value:  '1', label: 'Always off. Led strips off.'},
+
+            { value: '11', label: 'Automatic, when PIR is activated.'},
+            { value: '12', label: 'Automatic, by PIR between sunset and sunrise.'},
+
+            { value: '31', label: 'Always on. Led strips on.'},
             
-            "91": "Test1 activated.",
-            "92": "Test2 activated.",
-            "93": "Test3 activated.",
-*/
-var currentState = 10;
-var prevState = 10;
+            { value: '91', label: 'Test1 activated.'},
+            { value: '92', label: 'Test2 activated.'},
+            { value: '93', label: 'Test3 activated.'},
+            { value: '94', label: 'Test3 activated.'}
+];
+
+var currentState = 0;                  // current program state
+var prevState = currentState;          // previous program state
 
 
 
@@ -70,17 +75,18 @@ var prevState = 10;
     log.info("Started on: " + Date());
     log.info("-----------------------------------------------");
 
+    // Set default program mode to Automatic, and depending on the configuration.
+    if (config.disableDuringDaylight)
+        setCurrentState(12,false);
+    else
+        setCurrentState(11,false);
+    prevState = currentState;
+
     // Used to determine duration
     var startTime = moment(new Date());
     var endTime = moment(new Date());
 
-    if (config.disableDuringDaylight) {
-        currentState = 20;
-        prevState = currentState;
-    }
-
-
-    //------------------------------------------------------------------------------------------------------
+     //------------------------------------------------------------------------------------------------------
     // Monitors two PIRs, when motion has been detected the event handler will be called.
     log.info("Setup PIRs.");
     var PIR = require('./modules/pir/pir.js').PIR;
@@ -95,18 +101,20 @@ var prevState = 10;
     var LedStrips = new StairsLedStrips(gpioArray, { log: log });
 
 
-
     //------------------------------------------------------------------------------------------------------
-    // Serve the 'StairsJS Control Panel' page 
-    // (located in the 'build' folder, using 'npm run build' of the React Application)
+    // Some setup for the REST API, to support GET and POST in an easy way.
     log.info("Setup webserver for 'StairsJs Control Panel' ");
-    app.use(express.static(path.join(__dirname, 'build')));
 
-    app.get('/', function (req, res) {
-        res.sendFile(path.join(__dirname, 'build', 'index.html'));
-    });
 
-    //--------------------------------------------------------------------------------------------------------
+    //app.use(bodyParser.text({ type: 'application/xml' }));   // parse an XML body into a string
+    app.use(bodyParser.text({ type: '*/*' }));
+    app.use( bodyParser.json() );       // to support JSON-encoded bodies
+
+    app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+        extended: true
+      }));    
+
+
     // CORS: Allow cross-domain requests (blocked by default)
     app.use(function (req, res, next) {
         res.header("Access-Control-Allow-Origin", "*");
@@ -114,11 +122,18 @@ var prevState = 10;
         next();
     });
 
+    // Serve the 'StairsJS Control Panel' page 
+    // (located in the 'build' folder, using 'npm run build' of the React Application)
+    app.use(express.static(path.join(__dirname, 'build')));
 
-    //--------------------------------------------------------------------------------------------------------
-    // suncalc    => Send the sunrise and sunset times 
+    app.get('/', function (req, res) {
+        console.log('GET / received, routing to /build/index.html...');          
+        res.sendFile(path.join(__dirname, 'build', 'index.html'));
+    });
+
+    // GET on /suncalc    => Send the sunrise and sunset times 
     app.get('/suncalc', function (req, res, next) {
-        log.info('suncalc requested. returning the json with sunrise and sunset');
+        console.log('GET /suncalc received....processing...');        
 
         var myResult = { "sunset": "", "sunrise": "" };
 
@@ -140,30 +155,72 @@ var prevState = 10;
     });
 
 
-    //--------------------------------------------------------------------------------------------------------
-    // status    => Send the status of this program 
+    // GET on /status    => Send the status of this program 
     app.get('/status', function (req, res, next) {
-        log.info('status requested. returning the json...');
+        log.info('GET /status received....processing...');
+        console.log('GET /status received....processing...');
 
-        var myResult = { "currentState": "offline", "disableDuringDaylight": "false" };
+        var myResult = { currentState: 0, currentStateText: 'offline', disableDuringDaylight: false, currentStateOptions: [] };
 
-        if (currentState == 0) {
-            myResult.currentState = "Always, led strips off.";
+        myResult.currentState = currentState;
+        
+        if (currentState == 1) {
+            myResult.currentStateText = "Always off. Led strips off.";
         }
-        else if (currentState == 10) {
-            myResult.currentState = "Automatic, when PIR is activated.";
+        else if (currentState == 11) {
+            myResult.currentStateText = "Automatic, when PIR is activated.";
         }
-        else if (currentState == 20) {
-            myResult.currentState = "Automatic, between sunset and sunrise.";
+        else if (currentState == 12) {
+            myResult.currentStateText = "Automatic, between sunset and sunrise.";
         }
-        else if (currentState == 30) {
-            myResult.currentState = "Always. led strips on.";
+        else if (currentState == 31) {
+            myResult.currentStateText = "Always on. Led strips on.";
         }
         myResult.disableDuringDaylight = config.disableDuringDaylight;
 
+        myResult.currentStateOptions = currentStateOptions;
+
+        console.log("Return currentState = "+ myResult.currentState );        
+        console.log("Return currentStateText = "+ myResult.currentStateText );
+        
         res.contentType('application/json');
         res.send(JSON.stringify(myResult));
     });
+
+
+    // The POST on /control => set the mode (=currentState) of this program
+    app.post('/control',function(req, res){
+        log.info('POST /control received....processing...');
+        console.log('POST /control received....processing...');
+        console.log(req.headers['content-type']);       // show received headers in the console
+
+        if (!req.body) {                                // we need an XML or JSON body
+            res.status(400);                          
+            res.send('XML or JSON Body is required');  
+            console.log("XML or JSON Body is required");
+        }
+        else {
+         
+            // show received request body in the console
+            console.log(req.body);
+            var dataObject = JSON.parse(req.body);
+
+            // Process the requested program mode (new currentState)
+            if (dataObject.requestedState) {
+                var newState = dataObject.requestedState;
+                setCurrentState(newState,false)
+
+                console.log("OK, processed");
+                res.status(201);                            // 201 = status created since new content has been created (received)
+                res.send("OK, processed");                  // and in the body we return a status text
+            }
+            else {
+                console.log("Not OK, not processed");
+                res.status(400);                            // 400, Bad request, since we could process the post request
+                res.send("Not OK, not processed");          // and in the body we return a status text
+            }
+        }
+      });
 
 
     var server = app.listen(PORT, function () {
@@ -171,6 +228,10 @@ var prevState = 10;
         log.info(APPNAME + ": Control Panel is ready and listening on port: " + PORT);
         console.log(APPNAME + ": Control Panel is ready and listening on port: " + PORT);
     });
+
+    log.info("Setup webserver completed.' ");
+    console.log("Setup completed, program is running...");
+    //------------------------------------------------------------------------------------------------------
 
 
     function checkTime(i) {
@@ -185,8 +246,9 @@ var prevState = 10;
     function pirTiggerEvent(gpio) {
         var now = new Date();
 
-        // When enabled, do not light stairs during daylight
-        if (config.disableDuringDaylight) {
+        // Depending on program-mode (currentState), do not light stairs during daylight
+        //if (config.disableDuringDaylight) {
+        if (currentState===12) {
 
             // get today's sunlight times for my location 
             // use 'https://www.gps-coordinates.net/' to find your 
@@ -203,23 +265,51 @@ var prevState = 10;
             }
         }
 
+        if ( (currentState == 11) || (currentState == 12) ) {
+            // Led strips not turning on ?
+            if (!LedStrips.activated) {
+                if (gpio == PIR_UpStairs.gpio) {
+                    // PIR-UpStairs detected motion => turn stairs on from bottom to top
+                    LedStrips.onUpDirection();
+                } else if (gpio == PIR_DownStairs.gpio) {
+                    // PIR-DownStairs detected motion => turn stairs on from top to bottom
+                    LedStrips.onDownDirection();
+                }
 
-        // Led strips not turning on ?
-        if (!LedStrips.activated) {
-            if (gpio == PIR_UpStairs.gpio) {
-                // PIR-UpStairs detected motion => turn stairs on from bottom to top
-                LedStrips.onUpDirection();
-            } else if (gpio == PIR_DownStairs.gpio) {
-                // PIR-DownStairs detected motion => turn stairs on from top to bottom
-                LedStrips.onDownDirection();
-            }
-
-            if (LedStrips.activated) {  // Led Strips just activated ?
-                log.info("LedStrips activated. Direction: " + LedStrips.direction);
-                console.log("LedStrips activated. Direction: " + LedStrips.direction);
+                if (LedStrips.activated) {  // Led Strips just activated ?
+                    log.info("LedStrips activated. Direction: " + LedStrips.direction);
+                    console.log("LedStrips activated. Direction: " + LedStrips.direction);
+                }
             }
         }
     };
+
+
+    function setCurrentState(state,dontRememberPrev) {
+
+        if (state!=currentState) {
+            var msg = "Program state changed from: " + currentState + " to: " + state;
+            log.info(msg);
+            console.log(msg);
+
+            currentState = state;                   // current program state
+
+            if (!dontRememberPrev) {
+                prevState = currentState;           // previous program state
+            }
+
+            if (currentState == 1) {
+                console.log("Turn LedStrips Off Now");
+                LedStrips.turnOffNow()
+            }
+            else if (currentState == 31) {
+                console.log("Turn LedStrips ON");                
+                LedStrips.turnOn();
+            }
+            
+            console.log("CurrentState is set to:" +currentState);
+        }
+    }
 
     // Unexport GPIO to free resources
     function unExportGpio() {
