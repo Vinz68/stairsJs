@@ -3,6 +3,7 @@
 // It takes care of activating the configured stair-steps (led strips) in a certain sequence.
 // The sequence depends on the activation function:
 //      turnOn           - turn all led strips on and after configured time turn them all off
+//      keepOn           - turn all led strips on, and keep them on
 //      turnOff          - turn all led strips off, depending on setting of direction with or without delay
 //      turnOffNow       - turn all led strips off, direct without delay.
 //      onDownDirection  - turn stairs led strips on, starting at top (last ledstrip) to bottom (first ledstrip)
@@ -13,6 +14,7 @@
 // 2018-01-07 Vincent van Beek  v0.0.5  => tested version
 // 2018-03-13 Vincent van Beek  v0.0.6  => Update: config file added for 2 settings (keepOnDelay and delayBetweenStairs)
 // 2019-01-05 Vincent van Beek  v0.1.0  => added turnOffNow (turns of all ledlights, in a fast way)
+// 2019-01-08 Vincent van Beek  v0.1.1  => added keepOn (turns on all ledlights, in a fast way, and keeps them on)
 //-----------------------------------------------------------------------------------------------------
 "use strict";
 exports.version = '0.0.6';
@@ -115,6 +117,26 @@ class StairsLedStrips {
             setTimeout(this.turnOff.bind(this), this.keepOnDelay );
         }
     }
+
+    keepOn() {
+        // force of stopping current activities
+        clearInterval(this.onOffTimer);
+
+        // reset of activated flag, keepOn always allowd.    
+        this.activated=false;
+
+        if (!this.activated) {
+            this.log.info("StairsLedStrips::keepOn");
+            
+            // NOTE: do NOT activate / keep deactivated to allow othe actions
+             this.direction = 'none';
+
+            for(var i = 0; i < this.ledStripArray.length; i++){
+                this.switchLedStrip( i, 1);
+            }
+        }
+    }
+
 
     onUpDirection() {
         if (!this.activated) {

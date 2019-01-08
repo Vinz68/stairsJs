@@ -246,9 +246,10 @@ var prevState = currentState;          // previous program state
     function pirTiggerEvent(gpio) {
         var now = new Date();
 
+        var darkEnough = false;
+
         // Depending on program-mode (currentState), do not light stairs during daylight
-        //if (config.disableDuringDaylight) {
-        if (currentState===12) {
+        if (currentState == 12) {
 
             // get today's sunlight times for my location 
             // use 'https://www.gps-coordinates.net/' to find your 
@@ -261,6 +262,7 @@ var prevState = currentState;          // previous program state
             else {
                 // Its currently between sunrise and sunset and we should have enough daylight.
                 // Stop processing ; disable stairs LedStrips.
+                console.log("pirTriggerEvent: its NOT dark enough to enable stairs LedStrips");
                 return;
             }
         }
@@ -304,7 +306,7 @@ var prevState = currentState;          // previous program state
             }
             else if (currentState == 31) {
                 console.log("Turn LedStrips ON");                
-                LedStrips.turnOn();
+                LedStrips.keepOn();
             }
             
             console.log("CurrentState is set to:" +currentState);
