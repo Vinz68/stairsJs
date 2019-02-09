@@ -48,22 +48,20 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
 
 
 const currentStateOptions = [               // all possible program states
-            { value:  '1', label: 'Always off. Led strips off.'},
+            { value:  '1', label: 'Always off.'},
 
-            { value: '11', label: 'Automatic, when PIR is activated.'},
-            { value: '12', label: 'Automatic, by PIR between sunset and sunrise.'},
+            { value: '11', label: 'Automatic, by PIR.'},
+            { value: '12', label: 'Automatic, by PIR when dark.'},
 
-            { value: '31', label: 'Always on. Led strips on.'},
-            
-            { value: '91', label: 'Test1 activated.'},
-            { value: '92', label: 'Test2 activated.'},
-            { value: '93', label: 'Test3 activated.'},
-            { value: '94', label: 'Test3 activated.'}
+            { value: '31', label: 'Always on.'},
+            { value: '32', label: 'Always on when dark.'},            
+
+            { value: '91', label: 'Test1 activated.'}
 ];
 
-var currentState = 0;                  // current program state
-var prevState = currentState;          // previous program state
-
+var currentState = 0;                   // current program state
+var prevState = currentState;           // previous program state
+var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs should be tuned on or off (in mode 32) 
 
 
 /* -----------------------------------------------------
@@ -75,18 +73,19 @@ var prevState = currentState;          // previous program state
     log.info("Started on: " + Date());
     log.info("-----------------------------------------------");
 
-    // Set default program mode to Automatic, and depending on the configuration.
-    if (config.disableDuringDaylight)
-        setCurrentState(12,false);
-    else
-        setCurrentState(11,false);
+    // Set default program mode (currentState) to the configured value.
+    setCurrentState(config.startupState,false);
     prevState = currentState;
 
     // Used to determine duration
     var startTime = moment(new Date());
     var endTime = moment(new Date());
 
-     //------------------------------------------------------------------------------------------------------
+    var intervalDelay = config.checkAutomaticOnInterval; // interval delay, to check if stairs should be tuned on or off (in mode 32) 
+    checkAutomaticOnOffTimer = setInterval( checkAutomaticOnOff, intervalDelay );
+
+
+    //------------------------------------------------------------------------------------------------------
     // Monitors two PIRs, when motion has been detected the event handler will be called.
     log.info("Setup PIRs.");
     var PIR = require('./modules/pir/pir.js').PIR;
@@ -100,20 +99,16 @@ var prevState = currentState;          // previous program state
     var gpioArray = [17, 18, 27, 22, 23, 24, 25, 4, 5, 6, 13, 19, 26, 12];
     var LedStrips = new StairsLedStrips(gpioArray, { log: log });
 
-
     //------------------------------------------------------------------------------------------------------
     // Some setup for the REST API, to support GET and POST in an easy way.
     log.info("Setup webserver for 'StairsJs Control Panel' ");
 
-
-    //app.use(bodyParser.text({ type: 'application/xml' }));   // parse an XML body into a string
     app.use(bodyParser.text({ type: '*/*' }));
     app.use( bodyParser.json() );       // to support JSON-encoded bodies
 
     app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
         extended: true
       }));    
-
 
     // CORS: Allow cross-domain requests (blocked by default)
     app.use(function (req, res, next) {
@@ -160,24 +155,17 @@ var prevState = currentState;          // previous program state
         log.info('GET /status received....processing...');
         console.log('GET /status received....processing...');
 
+        // status JSON to return
         var myResult = { currentState: 0, currentStateText: 'offline', disableDuringDaylight: false, currentStateOptions: [] };
 
         myResult.currentState = currentState;
         
-        if (currentState == 1) {
-            myResult.currentStateText = "Always off. Led strips off.";
-        }
-        else if (currentState == 11) {
-            myResult.currentStateText = "Automatic, when PIR is activated.";
-        }
-        else if (currentState == 12) {
-            myResult.currentStateText = "Automatic, between sunset and sunrise.";
-        }
-        else if (currentState == 31) {
-            myResult.currentStateText = "Always on. Led strips on.";
-        }
-        myResult.disableDuringDaylight = config.disableDuringDaylight;
+        for (var i = 0; i < currentStateOptions.length; i++) {
+            if (currentStateOptions[i].value == currentState)
+                myResult.currentStateText = currentStateOptions[i].label;
+        }          
 
+        myResult.disableDuringDaylight = config.disableDuringDaylight;
         myResult.currentStateOptions = currentStateOptions;
 
         console.log("Return currentState = "+ myResult.currentState );        
@@ -308,6 +296,9 @@ var prevState = currentState;          // previous program state
                 console.log("Turn LedStrips ON");                
                 LedStrips.keepOn();
             }
+            else if (currentState == 32) {
+                console.log("Turn LedStrips ON - as soon its dark");                
+            }            
             
             console.log("CurrentState is set to:" +currentState);
         }
@@ -323,10 +314,53 @@ var prevState = currentState;          // previous program state
 
     // Handle CTRL-C and termination. 
     process.on('SIGINT', function () {
+        // stop inteval 
+        clearInterval(checkAutomaticOnOffTimer);
+
         unExportGpio();
+
         log.info(APPNAME + " has been terminated.");
         process.exit(1);     // end program with code 1 (forced exit)
     });
+
+
+    //---------------------------------------------------
+    // Callback, when PIR detects motion
+    function checkAutomaticOnOff() {
+        var now = new Date();
+
+        var darkEnough = false;
+
+        // Depending on program-mode (currentState), turn stairs automatic on or off 
+        // On : when it gets dark
+        // Off: when it gets daylight
+        if (currentState == 32) {
+
+            // get today's sunlight times for my location 
+            // use 'https://www.gps-coordinates.net/' to find your 
+            // location latitude and longitude (and configure them in config.json)
+            var times = sunCalc.getTimes(now, config.latitude, config.longitude);
+
+            if ((now < times.sunriseEnd) || (now > times.sunsetStart)) {
+                // its dark enough to enable stairs LedStrips");
+
+                 // Led strips not turned on ?
+                if (!LedStrips.ledsOn) {
+                    console.log("checkAutomaticOnOff: its dark enough to enable stairs LedStrips - keepOn");
+                    LedStrips.keepOn();
+                }
+            }
+            else {
+                // Its currently between sunrise and sunset and we should have enough daylight.
+                // its NOT dark enough to enable stairs LedStrips");
+                // Led strips turned on ?
+                if (LedStrips.ledsOn) {
+                    console.log("checkAutomaticOnOff: its NOT dark enough to enable stairs LedStrips - turnOffNow");
+                    LedStrips.turnOffNow();
+                }
+            }
+        }
+    };        
 
 })();
 

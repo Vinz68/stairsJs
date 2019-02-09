@@ -17,7 +17,7 @@
 // 2019-01-08 Vincent van Beek  v0.1.1  => added keepOn (turns on all ledlights, in a fast way, and keeps them on)
 //-----------------------------------------------------------------------------------------------------
 "use strict";
-exports.version = '0.0.6';
+exports.version = '0.1.1';
 
 var Gpio = require('onoff').Gpio;           // Include onoff to interact with the GPIO
 var config = require('./config.json');      // The configuration 
@@ -41,8 +41,9 @@ class StairsLedStrips {
             ledStripArray[i] = new Gpio(gpioArray[i], 'out', 'none', {activeLow: true} );         // output signal, to enable one led-strip, not used relais is active-low
         }
 
-        this.activated = false;    // busy turning on or off
-        this.direction = 'none'    // direction turning on of off
+        this.ledsOn = false;        // fag if leds are all on (or not)
+        this.activated = false;     // busy turning on or off
+        this.direction = 'none'     // direction turning on of off
 
         this.keepOnDelay = config.keepOnDelay;  // delay keep all stairs on (in msec)
         this.delay = config.delayBetweenStairs; // delay in msec between ledstrips on/off
@@ -54,7 +55,6 @@ class StairsLedStrips {
 
     switchLedStrip(index, value) {
         if (index<this.ledStripArray.length) {
-            //console.log('Turn LedStrip['+index+'] to value='+value+' (GPIO-' + this.ledStripArray[index].gpio +')');
             this.ledStripArray[index].writeSync(value); 		     // Set pin state to 0 or 1 (turn LedStrip off or on)
         }
     }
@@ -69,6 +69,7 @@ class StairsLedStrips {
                 // turn stairs ledstips off after some time
                 clearInterval(this.onOffTimer);
                 setTimeout(this.turnOff.bind(this), this.keepOnDelay );
+                this.ledsOn = true;                
             }
         }
         else if (this.direction =='downstairs') {
@@ -80,6 +81,7 @@ class StairsLedStrips {
                 // turn stairs ledstips off after some time
                 clearInterval(this.onOffTimer);
                 setTimeout(this.turnOff.bind(this), this.keepOnDelay );
+                this.ledsOn = true;                
             }
         }
     }
@@ -90,18 +92,19 @@ class StairsLedStrips {
                 this.switchLedStrip(this.ledStripArrayIndex, 0);
                 this.ledStripArrayIndex++;
                 return;
-            }
+            } 
         }
         else if (this.direction =='downstairs') {
             if (this.ledStripArrayIndex>=0) {
                 this.switchLedStrip(this.ledStripArrayIndex, 0);
                 this.ledStripArrayIndex--;
                 return;
-            }
+            } 
         }
         // turn stairs ledstips off after some time
         clearInterval(this.onOffTimer);
         this.activated = false;
+        this.ledsOn = false;
     }
 
     turnOn() {
@@ -122,19 +125,19 @@ class StairsLedStrips {
         // force of stopping current activities
         clearInterval(this.onOffTimer);
 
-        // reset of activated flag, keepOn always allowd.    
-        this.activated=false;
+        // flag, indicating busy..   
+        this.activated = true;
+        this.log.info("StairsLedStrips::keepOn");
+        
+        // NOTE: do NOT activate / keep deactivated to allow other actions
+        this.direction = 'none';
 
-        if (!this.activated) {
-            this.log.info("StairsLedStrips::keepOn");
-            
-            // NOTE: do NOT activate / keep deactivated to allow othe actions
-             this.direction = 'none';
-
-            for(var i = 0; i < this.ledStripArray.length; i++){
-                this.switchLedStrip( i, 1);
-            }
+        for(var i = 0; i < this.ledStripArray.length; i++){
+            this.switchLedStrip( i, 1);
         }
+
+        this.ledsOn = true;
+        this.activated = false;
     }
 
 
@@ -193,11 +196,13 @@ class StairsLedStrips {
             this.switchLedStrip( i, 0);
         }
         this.activated = false;
+        this.ledsOn = false;        
     }
 
     turnOffNow() {
         this.direction = 'none';
         this.turnOff();
+        this.ledsOn = false;
     }
 
     offUpDirection() {

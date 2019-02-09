@@ -1,5 +1,7 @@
 {
+  "startupState": 32,
   "disableDuringDaylight": true,
+  "checkAutomaticOnInterval": 60000,
   "latitude": 52.370,
   "longitude": 4.895
 }
