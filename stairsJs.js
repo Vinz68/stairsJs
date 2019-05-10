@@ -4,8 +4,11 @@
    - using onoff as GPIO package
    2018-01-22   Initial version                                           Vincent van Beek
    2018-12-28   WebGUI - StairsJS Control Panbel - added.                 Vincent van Beek
-                GUI created with ReactJS, 
+                GUI created with ReactJS,
                 it's also on github: https://github.com/Vinz68/stairsJs-cp
+   2019-05-10   Mode 33 added (On when dark, Automatic by PIR after 23:00). which means:
+                - turn on when it get dark (and keep on until 23:00)
+                - after 23:00 and sunrise, turn on when PIR detects motion. 
 ----------------------------------------------------------------------------------------------------- */
 "use strict";
 var express = require("express");           // Express web application framework. http://expressjs.com/
@@ -20,8 +23,8 @@ var bodyParser = require("body-parser");    // Parse incoming request bodies in 
 var Gpio = require('onoff').Gpio;           // Include onoff to interact with the GPIO
 var moment = require('moment');             // Moment is used to determine duration(s)
 
-var sunCalc = require('suncalc');           // SunCalc is used to used sunrise / sunset time. https://github.com/mourner/suncalcs
-var config = require('./config.json');      // The configuration for sunCalc
+var sunCalc = require('suncalc');           // SunCalc is used to used sunrise / sunset time. https://github.com/mourner/suncalc
+var config = require('./config.json');      // The application configuration
 
 const APPNAME = "stairsJs";                 // Name of this app used here and there
 var PORT = process.env.PORT || 9000;        // Node will listen on port from environment setting, or when not set to port number...
@@ -54,7 +57,8 @@ const currentStateOptions = [               // all possible program states
             { value: '12', label: 'Automatic, by PIR when dark.'},
 
             { value: '31', label: 'Always on.'},
-            { value: '32', label: 'Always on when dark.'},            
+            { value: '32', label: 'Always on when dark.'},
+            { value: '33', label: 'On when dark, Automatic by PIR after 23:00'},
 
             { value: '91', label: 'Test1 activated.'}
 ];
@@ -81,7 +85,7 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
     var startTime = moment(new Date());
     var endTime = moment(new Date());
 
-    var intervalDelay = config.checkAutomaticOnInterval; // interval delay, to check if stairs should be tuned on or off (in mode 32) 
+    var intervalDelay = config.checkAutomaticOnInterval; // interval delay, to check if stairs should be tuned on or off (in mode 32)
     checkAutomaticOnOffTimer = setInterval( checkAutomaticOnOff, intervalDelay );
 
 
@@ -108,7 +112,7 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
 
     app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
         extended: true
-      }));    
+      }));
 
     // CORS: Allow cross-domain requests (blocked by default)
     app.use(function (req, res, next) {
@@ -117,23 +121,23 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
         next();
     });
 
-    // Serve the 'StairsJS Control Panel' page 
+    // Serve the 'StairsJS Control Panel' page
     // (located in the 'build' folder, using 'npm run build' of the React Application)
     app.use(express.static(path.join(__dirname, 'build')));
 
     app.get('/', function (req, res) {
-        console.log('GET / received, routing to /build/index.html...');          
+        console.log('GET / received, routing to /build/index.html...');
         res.sendFile(path.join(__dirname, 'build', 'index.html'));
     });
 
-    // GET on /suncalc    => Send the sunrise and sunset times 
+    // GET on /suncalc    => Send the sunrise and sunset times
     app.get('/suncalc', function (req, res, next) {
-        console.log('GET /suncalc received....processing...');        
+        console.log('GET /suncalc received....processing...');
 
         var myResult = { "sunset": "", "sunrise": "" };
 
-        // get today's sunlight times for my location 
-        // use 'https://www.gps-coordinates.net/' to find your 
+        // get today's sunlight times for my location
+        // use 'https://www.gps-coordinates.net/' to find your
         // location latitude and longitude (and configure them in config.json)
         var sunCalcObject = sunCalc.getTimes(new Date(), config.latitude, config.longitude);
 
@@ -150,27 +154,26 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
     });
 
 
-    // GET on /status    => Send the status of this program 
+    // GET on /status    => Send the status of this program
     app.get('/status', function (req, res, next) {
         log.info('GET /status received....processing...');
         console.log('GET /status received....processing...');
 
-        // status JSON to return
         var myResult = { currentState: 0, currentStateText: 'offline', disableDuringDaylight: false, currentStateOptions: [] };
 
         myResult.currentState = currentState;
-        
+
         for (var i = 0; i < currentStateOptions.length; i++) {
             if (currentStateOptions[i].value == currentState)
                 myResult.currentStateText = currentStateOptions[i].label;
-        }          
+        }
 
         myResult.disableDuringDaylight = config.disableDuringDaylight;
         myResult.currentStateOptions = currentStateOptions;
 
-        console.log("Return currentState = "+ myResult.currentState );        
+        console.log("Return currentState = "+ myResult.currentState );
         console.log("Return currentStateText = "+ myResult.currentStateText );
-        
+
         res.contentType('application/json');
         res.send(JSON.stringify(myResult));
     });
@@ -183,12 +186,12 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
         console.log(req.headers['content-type']);       // show received headers in the console
 
         if (!req.body) {                                // we need an XML or JSON body
-            res.status(400);                          
-            res.send('XML or JSON Body is required');  
+            res.status(400);
+            res.send('XML or JSON Body is required');
             console.log("XML or JSON Body is required");
         }
         else {
-         
+
             // show received request body in the console
             console.log(req.body);
             var dataObject = JSON.parse(req.body);
@@ -210,7 +213,6 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
         }
       });
 
-
     var server = app.listen(PORT, function () {
         // Log that we have started and accept incomming connections on the configured port
         log.info(APPNAME + ": Control Panel is ready and listening on port: " + PORT);
@@ -219,8 +221,8 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
 
     log.info("Setup webserver completed.' ");
     console.log("Setup completed, program is running...");
-    //------------------------------------------------------------------------------------------------------
 
+    //------------------------------------------------------------------------------------------------------
 
     function checkTime(i) {
         if (i < 10) {
@@ -231,16 +233,17 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
 
     //---------------------------------------------------
     // Callback, when PIR detects motion
+
     function pirTiggerEvent(gpio) {
         var now = new Date();
 
         var darkEnough = false;
 
         // Depending on program-mode (currentState), do not light stairs during daylight
-        if (currentState == 12) {
+        if ( (currentState == 12) || (currentState == 33) ) {
 
-            // get today's sunlight times for my location 
-            // use 'https://www.gps-coordinates.net/' to find your 
+            // get today's sunlight times for my location
+            // use 'https://www.gps-coordinates.net/' to find your
             // location latitude and longitude (and configure them in config.json)
             var times = sunCalc.getTimes(now, config.latitude, config.longitude);
 
@@ -255,7 +258,7 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
             }
         }
 
-        if ( (currentState == 11) || (currentState == 12) ) {
+        if ( (currentState == 11) || (currentState == 12) || (currentState == 33) ) {
             // Led strips not turning on ?
             if (!LedStrips.activated) {
                 if (gpio == PIR_UpStairs.gpio) {
@@ -293,13 +296,13 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
                 LedStrips.turnOffNow()
             }
             else if (currentState == 31) {
-                console.log("Turn LedStrips ON");                
+                console.log("Turn LedStrips ON");
                 LedStrips.keepOn();
             }
             else if (currentState == 32) {
-                console.log("Turn LedStrips ON - as soon its dark");                
-            }            
-            
+                console.log("Turn LedStrips ON - as soon its dark");
+            }
+
             console.log("CurrentState is set to:" +currentState);
         }
     }
@@ -312,9 +315,9 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
         LedStrips.unexport();
     }
 
-    // Handle CTRL-C and termination. 
+    // Handle CTRL-C and termination.
     process.on('SIGINT', function () {
-        // stop inteval 
+        // stop inteval
         clearInterval(checkAutomaticOnOffTimer);
 
         unExportGpio();
@@ -325,24 +328,33 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
 
 
     //---------------------------------------------------
-    // Callback, when PIR detects motion
+    // Callback, by timeInterval
     function checkAutomaticOnOff() {
         var now = new Date();
+        var turnOffTime = new Date();
 
         var darkEnough = false;
 
-        // Depending on program-mode (currentState), turn stairs automatic on or off 
+        // Depending on program-mode (currentState), turn stairs automatic on or off
         // On : when it gets dark
         // Off: when it gets daylight
-        if (currentState == 32) {
+        if ( (currentState == 32) || (currentState == 33) ) {
 
-            // get today's sunlight times for my location 
-            // use 'https://www.gps-coordinates.net/' to find your 
+            // get today's sunlight times for my location
+            // use 'https://www.gps-coordinates.net/' to find your
             // location latitude and longitude (and configure them in config.json)
             var times = sunCalc.getTimes(now, config.latitude, config.longitude);
 
-            if ((now < times.sunriseEnd) || (now > times.sunsetStart)) {
-                // its dark enough to enable stairs LedStrips");
+            turnOffTime.setTime(times.sunriseEnd.getTime());
+
+            // after 23:00 , use PIR to enable the lights.
+            if (currentState == 33) {
+                turnOffTime.setTime(times.sunriseStart.getTime());
+                turnOffTime.setHours(23, 0, 0);
+            }
+
+            if ((now < turnOffTime) || (now > times.sunsetStart)) {
+                // its dark enough to enable stairs LedStrips
 
                  // Led strips not turned on ?
                 if (!LedStrips.ledsOn) {
@@ -360,7 +372,7 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
                 }
             }
         }
-    };        
+    };
 
 })();
 
