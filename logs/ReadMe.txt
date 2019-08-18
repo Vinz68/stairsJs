@@ -1,11 +1,7 @@
-<<<<<<< HEAD
 # Show (formated) log file
 bunyan stairsJs.log
 
-# .. in short notation
-=======
 # Show (formated) log file in short notation
->>>>>>> 843a9e30db1ca72e2061f9bfbdd3c68be5f5dd22
 bunyan -o short stairsJs.log
 
 # Show (formated) log file
