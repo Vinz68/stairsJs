@@ -1,12 +1,7 @@
 {
   "name": "stairsjs",
-<<<<<<< HEAD
   "version": "0.0.3",
   "description": "Automatically drives the stair LED-lights, using a PIR as trigger device.",
-=======
-  "version": "0.0.2",
-  "description": "Automatically drives the stair LED-lights (14 steps), using a PIR as trigger device.",
->>>>>>> 843a9e30db1ca72e2061f9bfbdd3c68be5f5dd22
   "main": "stairsJs.js",
   "dependencies": {
     "body-parser": "^1.18.3",
