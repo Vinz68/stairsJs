@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD
   "startupState": 33,
-=======
-  "startupState": 32,
->>>>>>> 843a9e30db1ca72e2061f9bfbdd3c68be5f5dd22
   "disableDuringDaylight": true,
   "checkAutomaticOnInterval": 60000,
   "latitude": 52.370,
