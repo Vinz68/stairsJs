@@ -1,5 +1,5 @@
 # Show (formated) log file
-bunyan stairJs.log
+bunyan stairsJs.log
 
 # .. in short notation
 bunyan -o short stairsJs.log

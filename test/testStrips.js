@@ -41,7 +41,7 @@ var log = bunyan.createLogger({             // Create a logger, to log applicati
     Start of main program
 ------------------------------------------------------- */
 // using 'Immediately-Invoked Function Expression (IIFE)' pattern
-(function(){ 
+(function(){
     log.info("-----------------------------------------------");
     log.info("Started on: " + Date() );
     log.info("-----------------------------------------------");

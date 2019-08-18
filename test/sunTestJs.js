@@ -12,14 +12,14 @@ var config = require('./configAmsterdam.json');         // The configuration for
     Start of main program
 ------------------------------------------------------- */
 // using 'Immediately-Invoked Function Expression (IIFE)' pattern
-(function(){ 
+(function(){
 
         // get today's sunlight times for Amsterdam
         var now = new Date();
-        var times = SunCalc.getTimes(now, config.latitude, config.longitude);
+        var times = SunCalc.getTimes(new Date(), config.latitude, config.longitude);
 
         console.log("stairLight should work today before: " + times.sunriseEnd + " and after " + times.sunsetStart );
-
+        console.log("Now = " + now );
 
         if ( (now < times.sunriseEnd ) || (now > times.sunsetStart)) {
                 console.log("stairLight - enable");
