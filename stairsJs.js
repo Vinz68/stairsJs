@@ -101,7 +101,7 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
     var startTime = moment(new Date());
     var endTime = moment(new Date());
 
-    var intervalDelay = config.checkAutomaticOnInterval; // interval delay, to check if stairs should be tuned on or off (in mode 32)
+    var intervalDelay = config.checkAutomaticOnInterval; // interval delay, to check if stairs should be tuned on or off automatically
     checkAutomaticOnOffTimer = setInterval( checkAutomaticOnOff, intervalDelay );
 
     //------------------------------------------------------------------------------------------------------
@@ -369,7 +369,6 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
         var now = new Date();
         var turnToPIRModeTime = new Date();
 
-
         // get today's sunlight times for my location
         // use 'https://www.gps-coordinates.net/' to find your
         // location latitude and longitude (and configure them in config.json)
@@ -387,6 +386,7 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
                  // Led strips not turned on ?
                 if (!LedStrips.ledsOn) {
                     console.log("checkAutomaticOnOff-mode32: its dark enough to enable stairs LedStrips - keepOn");
+                    log.info("checkAutomaticOnOff-mode32: its dark enough to enable stairs LedStrips - keepOn");
                     LedStrips.keepOn();
                 }
             }
@@ -396,6 +396,7 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
                 // Led strips turned on ?
                 if (LedStrips.ledsOn) {
                     console.log("checkAutomaticOnOff-mode32: its NOT dark enough to enable stairs LedStrips - turnOffNow");
+                    log.info("checkAutomaticOnOff-mode32: its NOT dark enough to enable stairs LedStrips - turnOffNow");
                     LedStrips.turnOffNow();
                 }
             }
@@ -417,6 +418,7 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
                  // Led strips not turned on ?
                 if (!LedStrips.ledsOn) {
                     console.log("checkAutomaticOnOff-mode33: its dark enough to enable stairs LedStrips - keepOn");
+                    log.info("checkAutomaticOnOff-mode33: its dark enough to enable stairs LedStrips - keepOn");
                     LedStrips.keepOn();
                 }
             }
@@ -428,11 +430,11 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
                 // So, turn leds off (when they are on, and currently not turned on by the PIR)
                 if ( (LedStrips.ledsOn) && (!LedStrips.activated) ){
                     console.log("checkAutomaticOnOff-33: turnOffNow (when leds are on), use PIR to trigger leds on");
+                    log.info("checkAutomaticOnOff-33: turnOffNow (when leds are on), use PIR to trigger leds on");
                     LedStrips.turnOffNow();
                 }
             }
         }
-
 
     };
 
