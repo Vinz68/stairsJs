@@ -8,11 +8,7 @@
                 it's also on github: https://github.com/Vinz68/stairsJs-cp
    2019-05-10   Mode 33 added (On when dark, Automatic by PIR after 23:00). which means:
                 - turn on when it get dark (and keep on until 23:00)
-<<<<<<< HEAD
-                - after 23:00 and sunrise, turn on when PIR detects motion.
-=======
                 - after 23:00 and sunrise, turn on when PIR detects motion. 
->>>>>>> 843a9e30db1ca72e2061f9bfbdd3c68be5f5dd22
 ----------------------------------------------------------------------------------------------------- */
 "use strict";
 var express = require("express");           // Express web application framework. http://expressjs.com/
@@ -239,13 +235,6 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
     // Callback, when PIR detects motion
 
     function pirTiggerEvent(gpio) {
-<<<<<<< HEAD
-        var now = moment();
-
-        // Depending on program-mode (currentState), do not light stairs during daylight
-        if ( (currentState == 12) || (currentState == 33) ) {
-
-=======
         var now = new Date();
 
         var darkEnough = false;
@@ -253,7 +242,6 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
         // Depending on program-mode (currentState), do not light stairs during daylight
         if ( (currentState == 12) || (currentState == 33) ) {
 
->>>>>>> 843a9e30db1ca72e2061f9bfbdd3c68be5f5dd22
             // get today's sunlight times for my location
             // use 'https://www.gps-coordinates.net/' to find your
             // location latitude and longitude (and configure them in config.json)
@@ -291,7 +279,6 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
 
 
     function setCurrentState(state,dontRememberPrev) {
-<<<<<<< HEAD
 
         if (state!=currentState) {
             var msg = "Program state changed from: " + currentState + " to: " + state;
@@ -312,28 +299,6 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
                 console.log("Turn LedStrips ON");
                 LedStrips.keepOn();
             }
-=======
-
-        if (state!=currentState) {
-            var msg = "Program state changed from: " + currentState + " to: " + state;
-            log.info(msg);
-            console.log(msg);
-
-            currentState = state;                   // current program state
-
-            if (!dontRememberPrev) {
-                prevState = currentState;           // previous program state
-            }
-
-            if (currentState == 1) {
-                console.log("Turn LedStrips Off Now");
-                LedStrips.turnOffNow()
-            }
-            else if (currentState == 31) {
-                console.log("Turn LedStrips ON");
-                LedStrips.keepOn();
-            }
->>>>>>> 843a9e30db1ca72e2061f9bfbdd3c68be5f5dd22
             else if (currentState == 32) {
                 console.log("Turn LedStrips ON - as soon its dark");
             }
@@ -365,16 +330,10 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
     //---------------------------------------------------
     // Callback, by timeInterval
     function checkAutomaticOnOff() {
-<<<<<<< HEAD
-
-        var now = moment();
-        var turnOffTime = now;
-=======
         var now = new Date();
         var turnOffTime = new Date();
 
         var darkEnough = false;
->>>>>>> 843a9e30db1ca72e2061f9bfbdd3c68be5f5dd22
 
         // Depending on program-mode (currentState), turn stairs automatic on or off
         // On : when it gets dark
@@ -386,22 +345,12 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
             // location latitude and longitude (and configure them in config.json)
             var times = sunCalc.getTimes(now, config.latitude, config.longitude);
 
-<<<<<<< HEAD
-            // after 23:00 , use PIR to enable the lights.
-            if (currentState == 33) {
-                turnOffTime = moment(times.sunriseStart);
-                turnOffTime.subtract({ days: 1 });
-                turnOffTime.hour(23);
-                turnOffTime.minute(0);
-                console.log("turnOffTime = " + turnOffTime.local().format() );
-=======
             turnOffTime.setTime(times.sunriseEnd.getTime());
 
             // after 23:00 , use PIR to enable the lights.
             if (currentState == 33) {
                 turnOffTime.setTime(times.sunriseStart.getTime());
                 turnOffTime.setHours(23, 0, 0);
->>>>>>> 843a9e30db1ca72e2061f9bfbdd3c68be5f5dd22
             }
 
             if ((now < turnOffTime) || (now > times.sunsetStart)) {
@@ -418,16 +367,7 @@ var checkAutomaticOnOffTimer = 0;       // interval timer, to check if stairs sh
                 // its NOT dark enough to enable stairs LedStrips");
                 // Led strips turned on ?
                 if (LedStrips.ledsOn) {
-<<<<<<< HEAD
-                    if (currentState == 33) {
-                        console.log("checkAutomaticOnOff: its not dark enough or later then 23:00 - turnOffNow");
-                    }
-                    else {
-                        console.log("checkAutomaticOnOff: its NOT dark enough to enable stairs LedStrips - turnOffNow");
-                    }
-=======
                     console.log("checkAutomaticOnOff: its NOT dark enough to enable stairs LedStrips - turnOffNow");
->>>>>>> 843a9e30db1ca72e2061f9bfbdd3c68be5f5dd22
                     LedStrips.turnOffNow();
                 }
             }
