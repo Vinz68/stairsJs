@@ -1,18 +1,18 @@
-## stairsJs
-is a minimal NodeJS app for a rapberry pi-3 to automatically drive the stairs LED lights (14 steps) using IR detection.
-It uses logging (bunyan) and of course GPIO (onoff).
+## Introduction
+StairsJs is a minimal NodeJS app to automatically drive the stairs LED lights using 2 passive infra red detectors (PIRs) and uses the current sunset and sunrise times to activate the stair LED lights when someone enters the PIR detection zone.
+It can run by it own (after installation no internet required). It uses 3rd party packages for logging (bunyan), determination of sunset and sunrise (suncalc) and of course a package for the input and output GPIO (onoff).
 
 ## Purpose 
 The goal of this project is to build a nice led-light for my stairs (which I renovated recently) and to learn the raspberry PI, nodeJS and GPIO programming
 
-## Hardware
-TODO, make list of each component + link to spec.
 
-## Electric Scheme
-TODO, display all connection/wires
+## Hardware and Electric Scheme
+List of each component with a link to specification and a global schematic overview with the list of used pin's of the raspberry PI can be found on the [wiki page](https://github.com/Vinz68/stairsJs/wiki)
+
 
 ## Pictures
-
+![stairs](doc/pictures/picture400.png) 
+![board](/doc/pictures/board400.png) 
 
 ## Installation notes
 
@@ -28,10 +28,11 @@ To install node + npm execute:
 curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
+See also [w3schools](https://www.w3schools.com/nodejs/nodejs_raspberrypi.asp) for more details to install raspbian and node.
 
 ***Installation steps:***
 
-1. Fork this package to your github account
+1. Fork this package to your github account and/or
 
 
 2. Clone it from github to your server 
@@ -52,13 +53,14 @@ NOTE: Use npm install --only=production to install only dependencies, and not de
 use one of the following commands
 ``` bash
 node stairsJs
+
 npm start
 ```
 or use PM2 (auto starts / auto restart the program after boot)
 ``` bash
 pm2 start stairsJs.js
 ```
-For the last option you need to install PM2. TODO: Provide link/instructions
+For the last option you need to install [PM2](http://pm2.keymetrics.io/)
 
 
 5. Execute the unit- and integration tests (todo)
@@ -73,10 +75,11 @@ Report a bug or a suggestion by posting an issue on the git repository (https://
  
 ## TODO List:
  - [ ] include code quality check (JSLint or something else..)     
- - [ ] add hardware overview
- - [ ] add electric scheme
- - [ ] add pictures
- - [ ] add PM2 link/instructions ?
+ - [ ] create a GUI client to show status and gain control of the stairs logic, using web-technology. This is currently under development, see [stairsJs-control-panel](https://github.com/Vinz68/stairsJs-control-panel)
+
+
+If you used this to build your own stairs-led-light then send me a picture ; love to see it !.
+
 
  
 
