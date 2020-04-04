@@ -8,7 +8,7 @@
     "bunyan": "^1.8.12",
     "express": "^4.17.1",
     "moment": "^2.24.0",
-    "onoff": "^3.2.2",
+    "onoff": "^5.0.1",
     "request": "^2.88.2",
     "suncalc": "^1.8.0",
     "uuid-v4": "^0.1.0"
@@ -20,8 +20,8 @@
     "gulp-nodemon": "^2.5.0",
     "gulp-uglify": "^3.0.2",
     "should": "^13.2.3",
-    "sinon": "^7.5.0",
-    "supertest": "^3.4.2"
+    "sinon": "^9.0.1",
+    "supertest": "^4.0.2"
   },
   "scripts": {
     "start": "node stairsJs.js",
