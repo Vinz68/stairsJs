@@ -6,7 +6,7 @@
   "dependencies": {
     "body-parser": "^1.19.0",
     "bunyan": "^1.8.12",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "moment": "^2.24.0",
     "onoff": "^5.0.1",
     "request": "^2.88.2",
